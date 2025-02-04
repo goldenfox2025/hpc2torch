@@ -451,7 +451,7 @@ void gather_cuda_wrapper(
     const void* index_shape, int index_rank,
     const void* out_shape, int out_rank,
     int outer,
-    int axis
+    int axis = 0
 ) {
     gather_cuda_kernel_launcher(
         input, index, output,
