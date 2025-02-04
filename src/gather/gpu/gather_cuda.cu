@@ -65,13 +65,13 @@ __global__ void gather_kernel(
 }
 
 
-// -------------------- (B) 特化: axis=0 向量化内核（合并 fallback 分支） -------------------- //
+// -------------------- (B) axis=0 向量化内核 -------------------- //
 // 模板参数：
 //   T 为标量类型（例如 float 或 __half），
 //   VecT 为向量类型（例如 float4 或 half2），
 //   VEC_SIZE 为加载个数（例如 4 或 2）。
 template<typename T, typename VecT, int VEC_SIZE>
-__global__ void gather_axis0_kernel_unified_fallback(
+__global__ void super_gather(
     const T* __restrict__ input,
     const int* __restrict__ index,
     T* __restrict__ output,
@@ -154,7 +154,7 @@ void gather_cuda_kernel_launcher(
             int extra = (total % 4) ? 1 : 0;
             int totalThreads = total_vec + extra;
             dim3 grid((totalThreads + block.x - 1) / block.x);
-            gather_axis0_kernel_unified_fallback<float, float4, 4>
+            super_gather<float, float4, 4>
                 <<<grid, block>>>( static_cast<const float*>(input),
                                     static_cast<const int*>(index),
                                     static_cast<float*>(output),
@@ -169,7 +169,7 @@ void gather_cuda_kernel_launcher(
             int extra = (total % 2) ? 1 : 0;
             int totalThreads = total_vec + extra;
             dim3 grid((totalThreads + block.x - 1) / block.x);
-            gather_axis0_kernel_unified_fallback<__half, half2, 2>
+            super_gather<__half, half2, 2>
                 <<<grid, block>>>( static_cast<const __half*>(input),
                                     static_cast<const int*>(index),
                                     static_cast<__half*>(output),
