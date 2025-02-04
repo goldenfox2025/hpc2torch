@@ -18,9 +18,10 @@ option(USE_CPU "Enable CPU-only compilation" OFF)
 # 添加头文件搜索路径  
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
+
 #使用 GLOB 命令找到 include/ 下的所有 .cpp 文件
 file(GLOB INCLUDE_SOURCE_FILES "include/**.cpp")
- 
+
 # 使用 list(APPEND ...) 命令将 INCLUDE_SOURCE_FILES 添加到 CPP_SOURCE_FILES
 file(GLOB CPP_SOURCE_FILES "src/**/cpu/*.cpp")
 list(APPEND CPP_SOURCE_FILES ${INCLUDE_SOURCE_FILES})
@@ -28,6 +29,7 @@ list(APPEND CPP_SOURCE_FILES ${INCLUDE_SOURCE_FILES})
 
 file(GLOB GPU_CUDA_FILES "src/**/gpu/*.cu")
 file(GLOB GPU_CUDNN_FILES "src/**/gpu/*.cpp")
+list(REMOVE_ITEM GPU_CUDNN_FILES "${PROJECT_SOURCE_DIR}/src/softmax/gpu/softmax_cudnn.cpp")
 list(APPEND CUDA_SOURCE_FILES ${GPU_CUDA_FILES} ${GPU_CUDNN_FILES})
 
 # 查找所有 .mlu, .cpp 文件 
@@ -40,12 +42,16 @@ if(USE_CUDA)
     message(STATUS "CUDA build enabled.")
     enable_language(CXX)
     enable_language(CUDA)
+
+    
     list(APPEND ALL_SOURCE_FILES ${CUDA_SOURCE_FILES} ${CPP_SOURCE_FILES})
     add_library(my_library SHARED ${ALL_SOURCE_FILES})# 创建库或可执行文件
     set_target_properties(my_library PROPERTIES
         CUDA_ARCHITECTURES 80
     )
-    target_link_libraries(my_library cudnn cublas)#如果调用cudnn库需要链接cudnn, cublas
+
+    # target_link_libraries(my_library cudnn cublas)#如果调用cudnn库需要链接cudnn, cublas
+    target_link_libraries(my_library cublas)
 
 elseif(USE_BANG)
     message(STATUS "BANG build enabled.")
